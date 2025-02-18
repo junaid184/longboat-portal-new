@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: #F5F7F8 !important; /* Replace with your desired color */
+}
+
+::-webkit-scrollbar {
+    width: 2px;
+    height: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    color: rgb(188, 70, 70);
+}
+
+@media (max-width: 640px) {
+  .newWidth {
+      width: 160% !important;
+      height: auto !important; /* Set width to 150% for screens smaller than 400px */
+  }
+}
+@media (max-width: 640px) {
+  .newWidth1 {
+      width: 500px !important;
+  }
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #969595;
+    border-radius: 2px;
+}
+
+#main-content {
+    margin-left: 290px; /* Default for larger screens */
+    padding: 20px; /* Add padding */
+  }
+  
+  @media (max-width: 639px) { /* Mobile breakpoint */
+    #main-content {
+      margin-left: 0; /* Remove margin on mobile */
+    }
+  }
+  
