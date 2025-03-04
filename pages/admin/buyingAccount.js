@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import MuiGridNew from "../../components/MuiGridNew";
 import { formatDateWithTime } from "../../utils";
 import Image from "next/image";
-import Loader from "../../components/Loader";
+import { DataGrid, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { fetchApi } from "../../fetchApi";
 import { MdAdd } from "react-icons/md";
@@ -16,6 +15,7 @@ import { IconButton, Menu, MenuItem, } from "@mui/material";
 import StylishButton from "../../components/StylishButton";
 import { getAccounts, accountSubmit, deleteAccount } from "../../services/buyingAccountService";
 import { RiFolderUploadFill } from "react-icons/ri";
+import { Skeleton,Box } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -24,6 +24,14 @@ export async function getServerSideProps(context) {
   return {
     props: { token },
   };
+}
+
+function QuickSearchToolbar() {
+  return (
+    <Box sx={{ p: 1.5, pb: 0 }}>
+      <GridToolbarQuickFilter />
+    </Box>
+  );
 }
 
 const initialAccountData = {
@@ -512,7 +520,6 @@ export default function Event({ token }) {
   return (
     <>
       <div className="border-collapse m-5  ">
-        {loading && <Loader />}
         <div
           className="flex items-center relative z-10 justify-between rounded-xl h-20 ml-4 mr-4 px-4"
           style={{ backgroundColor: colors.background }}
@@ -581,18 +588,57 @@ export default function Event({ token }) {
             onClickNo={handleDeleteCancel}
           />
         )}
-        <div className="relative -mt-10 z-0">
-          <MuiGridNew
-            rows={events}
-            columns={columns}
-            loading={loading}
-            totalCount={count} // Replace with your total row count
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            checkboxSelection
-            onSelectionModelChange={handleSelectionModelChange}
-
-          />
+       <div className="relative -mt-10 z-0">
+          {loading ? (
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={550}
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 10,
+                backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0'
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: "72vh",
+                width: "100%", // Keep the width at 100%
+                backgroundColor: "white",
+                borderRadius: "12px",
+                boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
+                paddingTop: "32px",
+              }}
+            >
+              <DataGrid
+                rows={events}
+                columns={columns}
+                pageSize={pageSize}
+                page={page}
+                rowCount={count}
+                paginationMode="server"
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pagination
+                disableSelectionOnClick
+                checkboxSelection
+                rowsPerPageOptions={[10, 50, 100]}
+                components={{ Toolbar: QuickSearchToolbar }}
+                sx={{
+                  "& .MuiDataGrid-root": {
+                    overflow: "auto",
+                  },
+                }}
+              />
+              {/* Optional: Display total records */}
+              {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Total records: {totalCount}
+        </Typography> */}
+            </Box>
+          )}
         </div>
         {showMessage && (
           <MessageAlert

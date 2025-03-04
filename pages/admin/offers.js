@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import Image from "next/image";
 import MuiGrid from "../../components/MuiGrid";
 import { Edit, Delete } from "@mui/icons-material";
-import Loader from "../../components/Loader";
 import { IconButton } from "@mui/material";
 import { MdAdd } from "react-icons/md";
 import offerIcon from "../../assets/images/offer.png";
@@ -238,7 +237,6 @@ const DataGridWithPagination = ({ token }) => {
   };
   return (
     <div className="border-collapse m-5 border-gray-600">
-      {loading && <Loader />}
       {/* Header section */}
       <div
         className="relative z-10 flex items-center justify-between rounded-xl h-20 bg-[#2F2F2F] p-4 mr-4 ml-4"

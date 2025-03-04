@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import MuiGridNew from "../../components/MuiGridNew";
 import { fetchApi } from "../../fetchApi";
 import { toast } from "react-toastify";
+import { DataGrid, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import {
   IconButton,
   FormControl,
@@ -11,6 +11,7 @@ import {
   MenuItem,
   TextField,
   Button,
+  Box,
 } from "@mui/material";
 import orderIcon from "../../assets/images/icons/order.png";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -19,10 +20,10 @@ import MessageAlert from "../../components/messageAlert";
 import { formatDate, formatDateWithTime } from "../../utils";
 import { RiFolderUploadFill } from "react-icons/ri";
 import StylishButton from "../../components/StylishButton";
-import Loader from "../../components/Loader";
 import { useTheme } from "../../context/themeContext";
 import { GetStatusById, statusList } from "../../utils/constant";
 import { handleActionApi, getOrdersApi } from "../../services/orderService";
+import { Skeleton } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -31,6 +32,13 @@ export async function getServerSideProps(context) {
   return {
     props: { token },
   };
+}
+function QuickSearchToolbar() {
+  return (
+    <Box sx={{ p: 1.5, pb: 0 }}>
+      <GridToolbarQuickFilter />
+    </Box>
+  );
 }
 export default function Orders({ token }) {
   const [orders, setOrders] = useState([]);
@@ -47,9 +55,9 @@ export default function Orders({ token }) {
 
   const handleMenuAction = async (statusId, orderId, token, setLoading, setOrders, setCount, page = 1, pageSize = 10) => {
     try {
-  
+
       const response = await handleActionApi(statusId, orderId, token);
-  
+
       // Check if the response indicates success
       if (response?.data) {
         // Fetch the updated order list
@@ -59,7 +67,7 @@ export default function Orders({ token }) {
       } else {
         console.warn(`Failed to update status for OrderId "${orderId}".`);
       }
-  
+
       return response;
     } catch (error) {
       console.error(
@@ -69,8 +77,8 @@ export default function Orders({ token }) {
       return null;
     }
   };
-  
-  
+
+
   const handlePageSizeChange = (newPageSize) => {
     console.log(`page size ${newPageSize}`);
     getOrdersApi(setLoading, setOrders, token, page, pageSize, setCount);
@@ -132,7 +140,7 @@ export default function Orders({ token }) {
     {
       field: "orderRecievedDateTime",
       headerName: "Recieved Date-Time",
-      width: 150,
+      width: 180,
       headerAlign: "center",
       align: "center",
       valueGetter: (params) => {
@@ -144,7 +152,7 @@ export default function Orders({ token }) {
     {
       field: "orderRecivedBy",
       headerName: "Assign To",
-      width: 120,
+      width: 180,
       headerAlign: "center",
       align: "center",
       valueGetter: (params) => params.row.orderRecivedBy?.userName || "",
@@ -152,7 +160,7 @@ export default function Orders({ token }) {
     {
       field: "orderFullFilledBy",
       headerName: "FullFilled By",
-      width: 120,
+      width: 180,
       headerAlign: "center",
       align: "center",
       valueGetter: (params) => params.row.orderFullFilledBy?.userName || "",
@@ -281,7 +289,7 @@ export default function Orders({ token }) {
       renderCell: (params) => {
         const open = Boolean(anchorEls[params.row.id]);
         const orderId = params.row.id; // Extract orderId from row data
-    
+
         // Option 2: Use statusMapping for quick lookup
         const statusMapping = {
           0: "Draft",
@@ -290,7 +298,7 @@ export default function Orders({ token }) {
           3: "Report NLA"
         };
         const currentStatus = statusMapping[params.row.orderFulfillmentStatus] || "Select Status";
-    
+
         return (
           <div>
             <Button
@@ -309,7 +317,7 @@ export default function Orders({ token }) {
             >
               {currentStatus}
             </Button>
-    
+
             <Menu
               anchorEl={anchorEls[params.row.id]}
               open={open}
@@ -327,16 +335,17 @@ export default function Orders({ token }) {
                 <MenuItem
                   key={status.id}
                   onClick={async () => {
-                    if(status.id === 4){
+                    if (status.id === 4) {
                       window.open(
                         "/admin/update-invoice?orderId=" + params.row?.id,
                         "_blank"
                       );
                     }
-                    else{
-                    await handleMenuAction(status.id, orderId, token , setLoading, setOrders, setCount, page, pageSize); // Use orderId here
-                    handleMenuClose(); // Close the menu after the action.
-                  }}}
+                    else {
+                      await handleMenuAction(status.id, orderId, token, setLoading, setOrders, setCount, page, pageSize); // Use orderId here
+                      handleMenuClose(); // Close the menu after the action.
+                    }
+                  }}
                 >
                   {status.label}
                 </MenuItem>
@@ -346,7 +355,7 @@ export default function Orders({ token }) {
         );
       },
     }
-    
+
   ];
   const colors = {
     background: theme === "light" ? "#2F2F2F" : "#686868",
@@ -358,7 +367,6 @@ export default function Orders({ token }) {
   };
   return (
     <div className="border-collapse m-5 border-gray-600">
-      {loading && <Loader />}
       <div
         className="flex items-center relative z-10 mr-3 ml-3 justify-between rounded-xl h-20 bg-[#2F2F2F] p-4"
         style={{ backgroundColor: colors.background }}
@@ -397,14 +405,56 @@ export default function Orders({ token }) {
         />
       </div>
       <div className="relative -mt-10 z-0">
-        <MuiGridNew
-          rows={orders}
-          columns={columns}
-          loading={loading}
-          onPageChange={handlePageChange}
-          totalCount={count}
-          onPageSizeChange={handlePageSizeChange}
-        />
+        {loading ? (
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={550}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 10,
+              backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0'
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              height: "72vh",
+              width: "100%", // Keep the width at 100%
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
+              paddingTop: "32px",
+            }}
+          >
+            <DataGrid
+              rows={orders}
+              columns={columns}
+              pageSize={pageSize}
+              page={page}
+              rowCount={count}
+              paginationMode="server"
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              pagination
+              disableSelectionOnClick
+              checkboxSelection
+              rowsPerPageOptions={[10, 50, 100]}
+              components={{ Toolbar: QuickSearchToolbar }}
+              sx={{
+                "& .MuiDataGrid-root": {
+                  overflow: "auto",
+                },
+              }}
+            />
+            {/* Optional: Display total records */}
+            {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
+                Total records: {totalCount}
+              </Typography> */}
+          </Box>
+        )}
       </div>
       {showMessage && (
         <MessageAlert

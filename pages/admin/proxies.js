@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import MuiGridNew from "../../components/MuiGridNew";
 import { fetchApi } from "../../fetchApi";
+import { DataGrid, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { Button } from "@mui/material";
 import proxiIcon from "../../assets/images/proxy.png";
@@ -9,8 +9,8 @@ import MessageAlert from "../../components/messageAlert";
 import { formatDate, formatDateWithTime } from "../../utils";
 import { RiFolderUploadFill } from "react-icons/ri";
 import StylishButton from "../../components/StylishButton";
-import Loader from '../../components/Loader';
 import { useTheme } from "../../context/themeContext";
+import { Skeleton , Box } from "@mui/material";
 
 
 export async function getServerSideProps(context) {
@@ -21,6 +21,14 @@ export async function getServerSideProps(context) {
     props: { token },
   };
 }
+function QuickSearchToolbar() {
+  return (
+    <Box sx={{ p: 1.5, pb: 0 }}>
+      <GridToolbarQuickFilter />
+    </Box>
+  );
+}
+
 export default function Proxies({ token }) {
   const [proxies, setproxies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -34,41 +42,41 @@ export default function Proxies({ token }) {
 
   const getProxiApi = async (setLoading, setProxies, token, page = 1, pageSize = 10, setCount) => {
     setLoading(true);
-  
+
     try {
       const [response, error] = await fetchApi({
         method: "POST",
         endPoint: "proxy/filter",
-        data: { page : page + 1, pageSize },
+        data: { page: page + 1, pageSize },
         token,
       });
-  
+
       setLoading(false);
-  
+
       if (error) {
         throw new Error(
           error.response?.data?.message || "An error occurred while fetching proxies."
         );
       }
-  
-  if (response?.data) {
-    const responseData = response.data;
-  
-    // Correct the path to the data array
-    const proxiesWithIds = Array.isArray(responseData.data)
-      ? responseData.data.map((proxy) => ({
-          ...proxy,
-          id: proxy.proxyId || proxy.uniqueId || proxy.id, // Fallback to ensure unique ID
-        }))
-      : [];
-  
-    // Update state with proxies and count if provided
-    setCount(responseData.count || 0);
-    setProxies(proxiesWithIds);
-  } else {
-    throw new Error("Invalid response format from the server.");
-  }
-   } catch (err) {
+
+      if (response?.data) {
+        const responseData = response.data;
+
+        // Correct the path to the data array
+        const proxiesWithIds = Array.isArray(responseData.data)
+          ? responseData.data.map((proxy) => ({
+            ...proxy,
+            id: proxy.proxyId || proxy.uniqueId || proxy.id, // Fallback to ensure unique ID
+          }))
+          : [];
+
+        // Update state with proxies and count if provided
+        setCount(responseData.count || 0);
+        setProxies(proxiesWithIds);
+      } else {
+        throw new Error("Invalid response format from the server.");
+      }
+    } catch (err) {
       setLoading(false);
       toast.error(err.message || "Something went wrong while fetching proxies.");
     }
@@ -129,7 +137,7 @@ export default function Proxies({ token }) {
   };
 
   useEffect(() => {
-    getProxiApi(setLoading,setproxies , token , page, pageSize , setCount);
+    getProxiApi(setLoading, setproxies, token, page, pageSize, setCount);
   }, [page, pageSize]);
 
   const columns = [
@@ -248,7 +256,6 @@ export default function Proxies({ token }) {
   };
   return (
     <div className="border-collapse m-5 border-gray-600">
-      {loading && <Loader />}
       <div className="flex items-center relative z-10 mr-3 ml-3 justify-between rounded-xl h-20 bg-[#2F2F2F] p-4"
         style={{ backgroundColor: colors.background }}
       >
@@ -286,14 +293,57 @@ export default function Proxies({ token }) {
         />
       </div>
       <div className="relative -mt-10 z-0">
-        <MuiGridNew rows={proxies}
-          columns={columns}
-          loading={loading}
-          onPageChange={handlePageChange}
-          totalCount={count}
-          onPageSizeChange={handlePageSizeChange}
-        />
-      </div>
+          {loading ? (
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={550}
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 10,
+                backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0'
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: "72vh",
+                width: "100%", // Keep the width at 100%
+                backgroundColor: "white",
+                borderRadius: "12px",
+                boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
+                paddingTop: "32px",
+              }}
+            >
+              <DataGrid
+                rows={proxies}
+                columns={columns}
+                pageSize={pageSize}
+                page={page}
+                rowCount={count}
+                paginationMode="server"
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pagination
+                disableSelectionOnClick
+                checkboxSelection
+                rowsPerPageOptions={[10, 50, 100]}
+                components={{ Toolbar: QuickSearchToolbar }}
+                sx={{
+                  "& .MuiDataGrid-root": {
+                    overflow: "auto",
+                  },
+                }}
+              />
+              {/* Optional: Display total records */}
+              {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Total records: {totalCount}
+        </Typography> */}
+            </Box>
+          )}
+        </div>
       {showMessage && (
         <MessageAlert
           type="normal"

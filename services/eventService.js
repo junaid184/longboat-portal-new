@@ -120,14 +120,14 @@ export const updateMultipleFields = async (selectedEventIds, updates, token, ref
   console.log("Inside updateMultipleFields:", updates.broadcastStatus, typeof updates.broadcastStatus);
 
   const values = {
-    eventIds: Array.isArray(selectedEventIds) ? selectedEventIds.join(",") : selectedEventIds,
+    eventId:selectedEventIds,
     broadcastStatus: updates.broadcastStatus, // Use updates.broadcastStatus
     listCostPercentage: updates.listCostPercentage,
   };
 
   const [data, error] = await fetchApi({
     method: "POST",
-    endPoint: `Event/UpdateEventDetails?EventId=${values.eventIds}`,
+    endPoint: `Event/UpdateEventDetails`,
     data: values,
     token,
   });

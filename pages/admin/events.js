@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import MuiGridNew from "../../components/MuiGridNew";
+import { DataGrid, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import userAvatar from "../../assets/images/avatar.png";
 import { formatDateWithTime } from "../../utils";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import axios from 'axios';
-import Loader from "../../components/Loader";
 import { MdAdd } from "react-icons/md";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import MessageAlert from "../../components/messageAlert";
@@ -13,6 +13,7 @@ import { addEventSchema } from "../../utils/validation";
 import EventModal from "../../components/EventModal";
 import eventIcon from "../../assets/images/events.png";
 import { useTheme } from "../../context/themeContext";
+import { Skeleton } from "@mui/material";
 
 import {
   IconButton,
@@ -42,13 +43,19 @@ export async function getServerSideProps(context) {
     props: { token },
   };
 }
-
+function QuickSearchToolbar() {
+  return (
+    <Box sx={{ p: 1.5, pb: 0 }}>
+      <GridToolbarQuickFilter />
+    </Box>
+  );
+}
 const initialEventData = {
- eventName: "",
+  eventName: "",
   venueName: "",
   tmEventId: "",
   eventMappingId: "",
-  image: "",
+  image: "www.google.com",
   inHandDate: null,
   eventDate: null,
   listCostPercentage: 0,
@@ -57,7 +64,9 @@ const initialEventData = {
   allowPreSales: false,
   shownQuantity: 0,
   rank: 1,
-  createdBy:-1,
+  createdBy: -1,
+  isLocked: false,
+  presaleCode: "",
   // isActive: false,
 };
 export default function Event({ token }) {
@@ -78,7 +87,7 @@ export default function Event({ token }) {
   const { theme } = useTheme(); // Access the current theme
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [count ,setCount] = useState(0);
+  const [count, setCount] = useState(0);
 
 
   const handleOpen = () => setOpen(true);
@@ -134,7 +143,7 @@ export default function Event({ token }) {
           setShowDeleteConfirmation(true);
           break;
         case "logs":
-          
+
           window.open(`/admin/logs/?eventId=${currentRow.setupEventId}`, "_blank"); // Open specific log based on row ID
           break;
         // case "report":
@@ -151,9 +160,9 @@ export default function Event({ token }) {
   };
 
   useEffect(() => {
-    getEventsApi(setLoading,setEvents , token , page, pageSize , setCount); 
+    getEventsApi(setLoading, setEvents, token, page, pageSize, setCount);
     // Pass token as an argument to fetchData
-  }, [page,pageSize]);
+  }, [page, pageSize]);
 
   const handleEventSubmit = (values, formikHelpers) => {
     eventSubmit(
@@ -162,7 +171,7 @@ export default function Event({ token }) {
       isEditMode,
       selectedRow,
       token,
-      () => getEventsApi(setLoading, setEvents, token , page, pageSize , setCount),
+      () => getEventsApi(setLoading, setEvents, token, page, pageSize, setCount),
       handleClose
     );
   };
@@ -198,19 +207,19 @@ export default function Event({ token }) {
       const inHandDate = eventData.inHandDate
         ? new Date(eventData.inHandDate).toISOString().split("T")[0]
         : null; // Handle cases where inHandDate might be null or undefined
-  
+
       // Update eventData with the formatted inHandDate
       const updatedEventData = { ...eventData, inHandDate };
-  
+
       console.log(updatedEventData, "Updated event data with date-only inHandDate");
-  
+
       setSelectedRow(updatedEventData);
       setSelectedEventId(updatedEventData.id);
       setIsEditMode(true);
       handleOpen();
     }
   };
-  
+
 
   const columns = [
     {
@@ -220,33 +229,33 @@ export default function Event({ token }) {
       headerAlign: "center",
       align: "center",
     },
-    {
-      field: "image",
-      headerName: "Image",
-      width: 120,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const imageUrl = params.row.image;
-        const isValidUrl =
-          imageUrl &&
-          (imageUrl.startsWith("/") ||
-            imageUrl.startsWith("http://") ||
-            imageUrl.startsWith("https://"));
+    // {
+    //   field: "image",
+    //   headerName: "Image",
+    //   width: 120,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => {
+    //     const imageUrl = params.row.image;
+    //     const isValidUrl =
+    //       imageUrl &&
+    //       (imageUrl.startsWith("/") ||
+    //         imageUrl.startsWith("http://") ||
+    //         imageUrl.startsWith("https://"));
 
-        return (
-          <div className="flex items-center w-60 justify-center space-x-4">
-            <img
-              className="rounded-full"
-              src={isValidUrl ? imageUrl : userAvatar}
-              alt="Event Image"
-              width={70}
-              height={120}
-            />
-          </div>
-        );
-      },
-    },
+    //     return (
+    //       <div className="flex items-center w-60 justify-center space-x-4">
+    //         <img
+    //           className="rounded-full"
+    //           src={isValidUrl ? imageUrl : userAvatar}
+    //           alt="Event Image"
+    //           width={70}
+    //           height={120}
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       field: "eventName",
       headerName: "Event Name",
@@ -294,7 +303,7 @@ export default function Event({ token }) {
     {
       field: "tmEventId",
       headerName: "TM-ID",
-      width: 180,
+      width: 200,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => <span>{params.row.tmEventId}</span>,
@@ -388,72 +397,36 @@ export default function Event({ token }) {
         </span>
       ),
     },
-    // {
-    //   field: "isModal",
-    //   headerName: "isModal",
-    //   width: 120,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => {
-    //     return (
-    //       <div className="w-28 h-10 flex justify-center items-center">
-    //         {params.row.isModal ? (
-    //           <span className="p-2 h-9 flex font-extrabold justify-center items-center rounded-2xl text-green-700">
-    //             <b>True</b>
-    //           </span>
-    //         ) : (
-    //           <span className="p-2 h-9 flex justify-center font-extrabold items-center rounded-2xl text-red-700">
-    //             <b>False</b>
-    //           </span>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    // },
-    // {
-    //   field: "isSideBar",
-    //   headerName: "isSideBar",
-    //   width: 120,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => {
-    //     return (
-    //       <div className="w-28 h-10 flex justify-center items-center">
-    //         {params.row.isSideBar ? (
-    //           <span className="p-2 h-9 flex font-extrabold justify-center items-center rounded-2xl text-green-700">
-    //             <b>True</b>
-    //           </span>
-    //         ) : (
-    //           <span className="p-2 h-9 flex justify-center font-extrabold items-center rounded-2xl text-red-700">
-    //             <b>False</b>
-    //           </span>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    // },
-    // {
-    //   field: "isMap",
-    //   headerName: "isMap",
-    //   width: 120,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => {
-    //     return (
-    //       <div className="w-28 h-10 flex justify-center items-center">
-    //         {params.row.isMap ? (
-    //           <span className="p-2 h-9 flex font-extrabold justify-center items-center rounded-2xl text-green-700">
-    //             <b>True</b>
-    //           </span>
-    //         ) : (
-    //           <span className="p-2 h-9 flex justify-center font-extrabold items-center rounded-2xl text-red-700">
-    //             <b>False</b>
-    //           </span>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    // },
+    {
+      field: "isLoacked",
+      headerName: "Locked",
+      width: 160,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        return (
+          <div className="w-28 h-10 flex justify-center items-center">
+            {params.row.isLocked ? (
+              <span className="p-2 h-9 flex font-extrabold justify-center items-center rounded-2xl text-green-700">
+                <b>True</b>
+              </span>
+            ) : (
+              <span className="p-2 h-9 flex justify-center font-extrabold items-center rounded-2xl text-red-700">
+                <b>False</b>
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      field: "presaleCode",
+      headerName: "Pre Sale Code",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => <span>{params.row.presaleCode}</span>,
+    },
     {
       field: "action",
       headerName: "Action",
@@ -534,8 +507,8 @@ export default function Event({ token }) {
   const handleSelectedDelete = async () => {
     if (selectedRowIds.length > 0) {
       try {
-        await multipleDelete(selectedRowIds, events, setEvents, token ,page, pageSize, setCount, setLoading);
-        
+        await multipleDelete(selectedRowIds, events, setEvents, token, page, pageSize, setCount, setLoading);
+
       } catch (error) {
         console.error("Failed to delete selected rows:", error);
       }
@@ -568,12 +541,12 @@ export default function Event({ token }) {
   };
 
   const colors = {
-    background: theme === "light" ? "#2F2F2F" : "#686868",  
+    background: theme === "light" ? "#2F2F2F" : "#686868",
     text: theme === "light" ? "#FFFFFF" : "#FFFFFF",
     border: theme === "light" ? "#FFFFFF" : "#E0E0E0",
     buttonHover: theme === "light" ? "#FF0000" : "#E0E0E0",
     buttonDeleteHoverBg: "#FF0000",
-      buttonDeleteHoverText: "#FFFFFF",
+    buttonDeleteHoverText: "#FFFFFF",
   };
   return (
     <>
@@ -694,7 +667,6 @@ export default function Event({ token }) {
       )}
 
       <div className="border-collapse m-5  ">
-        {loading && <Loader />}
         <div
           className="flex items-center relative z-10 justify-between rounded-xl h-20 ml-4 mr-4 px-4"
           style={{ backgroundColor: colors.background }}
@@ -704,7 +676,7 @@ export default function Event({ token }) {
               src={eventIcon}
               alt="logo"
               className="w-7 h-7"
-              style={{filter:"invert(100%)"}}
+              style={{ filter: "invert(100%)" }}
             />
             <h1
               className="text-3xl font-medium"
@@ -742,17 +714,56 @@ export default function Event({ token }) {
           />
         )}
         <div className="relative -mt-10 z-0">
-        <MuiGridNew
-      rows={events}
-      columns={columns}
-      loading={loading}
-      totalCount={count} // Replace with your total row count
-      onPageChange={handlePageChange}
-      onPageSizeChange={handlePageSizeChange}
-      checkboxSelection
-      onSelectionModelChange={handleSelectionModelChange}
-
-    />
+          {loading ? (
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={550}
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 10,
+                backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0'
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: "72vh",
+                width: "100%", // Keep the width at 100%
+                backgroundColor: "white",
+                borderRadius: "12px",
+                boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
+                paddingTop: "32px",
+              }}
+            >
+              <DataGrid
+                rows={events}
+                columns={columns}
+                pageSize={pageSize}
+                page={page}
+                rowCount={count}
+                paginationMode="server"
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pagination
+                disableSelectionOnClick
+                checkboxSelection
+                rowsPerPageOptions={[10, 50, 100]}
+                components={{ Toolbar: QuickSearchToolbar }}
+                sx={{
+                  "& .MuiDataGrid-root": {
+                    overflow: "auto",
+                  },
+                }}
+              />
+              {/* Optional: Display total records */}
+              {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Total records: {totalCount}
+        </Typography> */}
+            </Box>
+          )}
         </div>
       </div>
     </>

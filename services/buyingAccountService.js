@@ -8,7 +8,7 @@ export const getAccounts = async (setLoading, setRows, token, page = 1, pageSize
   const [response, error] = await fetchApi({
     method: "POST",
     endPoint: "BuyingAccount/filter",
-    data: { page: page +1, pageSize },  
+    data: { page: page + 1, pageSize },
     token,
   });
 
@@ -19,9 +19,9 @@ export const getAccounts = async (setLoading, setRows, token, page = 1, pageSize
     return null; // Explicitly return null on error
   }
 
-  if (response?.data?.count) {
+  if (response?.data?.count !== undefined) {
     // Update count
-    setCount(response?.data?.count || 50);
+    setCount(response?.data?.count || 0);
 
     // Map user data and ensure each item has a unique ID
     const accountsWithIds = response.data?.data?.map((account) => ({
@@ -53,7 +53,7 @@ export const accountSubmit = async (
       response = await fetchApi({
         method: "PUT",
         endPoint: `BuyingAccount`,
-        data: {...values },
+        data: { ...values },
         token,
       });
       toast.success("Account updated successfully.");
@@ -83,15 +83,10 @@ export const deleteAccount = async (accountId, events, setEvents, token) => {
   });
 
   if (error) {
-    toast.error(
-      error.response ? error?.response?.data?.message : error.message
-    );
+    toast.error(error.response ? error.response.data.message : error.message);
     return;
   }
 
   toast.success("Account deleted successfully.");
-console.log(events,"kkkkkkkkkkkkkkkkkkkkkkkk");
-
-  const accountsAfterDelete = events.filter((event) => event.accountId !== accountId);
-  setEvents(accountsAfterDelete);
 };
+

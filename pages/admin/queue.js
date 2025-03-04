@@ -23,7 +23,7 @@ export async function getServerSideProps(context) {
   }
 
   return {
-    props: { token }, // Pass the token as a prop
+    props: { token },
   };
 }
 
@@ -94,7 +94,7 @@ export default function Dashboard({ token }) {
       icon: inventoryIcon,
       menuKey: "admin3",
       eventTypeMapping: {
-        Inventory: "totalInventoryCount", // Replace with actual key if different
+        Inventory: "totalInventoryCount",
       },
     },
   ];
@@ -130,7 +130,6 @@ export default function Dashboard({ token }) {
           >
              Join Queue
           </button>
-  
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, Typography, Button } from "@mui/material";
+import { Card, CardContent, Typography, Button ,CircularProgress} from "@mui/material";
 import { fetchApi } from "../../fetchApi";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
@@ -17,8 +17,8 @@ export async function getServerSideProps(context) {
   };
 }
 
-export default function Logs({ token }) {
-  const [logs, setLogs] = useState([]);
+export default function NewOrders({ token }) {
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [joinedQueue, setJoinedQueue] = useState(false);
   const { theme } = useTheme();
@@ -41,7 +41,7 @@ export default function Logs({ token }) {
     }
 
     if (response?.data?.data) {
-      setLogs(
+      setOrders(
         response.data.data.map((log) => ({
           title: log.eventName,
           venue: log.venueName,
@@ -76,7 +76,7 @@ export default function Logs({ token }) {
 
     if (response?.isSuccess) {
       // Check for the isSuccess flag
-      setLogs(logs.filter((log) => log.id !== orderId)); // Update the logs
+      setOrders(orders.filter((log) => log.id !== orderId)); // Update the logs
       toast.success(response.message || "Order accepted successfully"); // Use the message from the response
       return true; // Return true if successful
     } else {
@@ -114,12 +114,6 @@ export default function Logs({ token }) {
 
   useEffect(() => {
     fetchOrders(userId);
-    // const handleUnload = () => {
-    //   navigator.sendBeacon(
-    //     `${process.env.NEXT_PUBLIC_BaseURL}/api/Order/delete-queue`,
-    //     JSON.stringify({ userId })
-    //   );
-    // };
     const handleUnload = async () => {
       await fetch(`${process.env.NEXT_PUBLIC_BaseURL}/api/Order/delete-queue`, {
         method: "POST",
@@ -129,14 +123,6 @@ export default function Logs({ token }) {
         body: JSON.stringify(userId),
         keepalive: true, // Ensures the request completes even if the tab closes
       });
-    };
-
-    const handleVisibilityChange = () => {
-      console.log("fgdfgdfgdfgdfgfd");
-
-      if (document.visibilityState === "hidden") {
-        handleUnload();
-      }
     };
 
     window.addEventListener("beforeunload", handleUnload);
@@ -213,22 +199,25 @@ export default function Logs({ token }) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-950">
-      {loading && <Loader />}
+    <div className="h-[800px]  bg-gray-50 text-gray-950">
       <Head>
         <title>Virtual Queue</title>
       </Head>
 
       {!joinedQueue ? (
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center h-[800px]">
           <button
-            className="px-6 py-4 bg-[#2F2F2F] text-white rounded-lg hover:bg-gray-700"
+            className="px-12 py-6 bg-[#2F2F2F] text-white text-2xl rounded-lg hover:bg-gray-700"
             onClick={() => joinQueue(jsonwebtoken.decode(token).userId)}
           >
-            Join Queue
+            {loading ? (
+                              <CircularProgress size={32} color="inherit" />
+                            ) : (
+                              "Join Queue"
+                            )}
           </button>
         </div>
-      ) : !logs ? (
+      ) : !orders ? (
         <>
           <header className="py-4">
             <h1 className="text-center text-xl font-bold">
@@ -266,7 +255,7 @@ export default function Logs({ token }) {
         <div className="min-h-screen py-10">
           {loading && <Loader />}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
-            {logs.map((order, index) => (
+            {orders.map((order, index) => (
               <OrderCard key={index} {...order} />
             ))}
           </div>

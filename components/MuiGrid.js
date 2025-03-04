@@ -20,7 +20,7 @@ export default function MuiGrid({ data, columns, clickHandler, autoHeight, rowsP
   return (
       <Box
           sx={{
-              height: '72vh',
+              height: '75vh',
               width: '100%', // Keep the width at 100%
               backgroundColor: 'white',
               borderRadius: '12px',

@@ -3,11 +3,11 @@ import Card from "../../components/Card";
 import menuItems from "../../components/MenuItems";
 import Image from "next/image";
 import orderIcon from "../../assets/images/icons/order.png";
-import inventoryIcon from "../../assets/images/inventory.png";
 import eventIcon from "../../assets/images/events.png";
 import { fetchApi } from "../../fetchApi";
 import { useEffect, useState } from "react";
 import { useTheme } from "../../context/themeContext";
+import { Skeleton } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -108,8 +108,9 @@ export default function Dashboard({ token }) {
     >
       <Header theme={theme} />
 
-      {loading ? (
-        <div className="text-center text-xl mt-10">Loading...</div>
+      {/* {loading ? (
+        // <div className="text-center text-xl mt-10">Loading...</div>
+        <Skeleton variant="circular" width={32} height={32} className="ml-8 mt-3" sx={{ backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0' }} />
       ) : (
         sections.map((section, index) => (
           <DashboardSection
@@ -117,9 +118,20 @@ export default function Dashboard({ token }) {
             section={section}
             counts={counts}
             themeStyles={themeStyles}
+            loading={loading}
           />
         ))
-      )}
+      )} */}
+      {sections.map((section, index) => (
+        <DashboardSection
+          key={index}
+          section={section}
+          counts={counts}
+          themeStyles={themeStyles}
+          loading={loading} // Pass loading state to show skeletons in sections
+        />
+      ))}
+
     </div>
   );
 }
@@ -127,60 +139,81 @@ export default function Dashboard({ token }) {
 function Header({ theme }) {
   return (
     <div
-      className={`text-4xl font-bold ml-4 p-3 flex items-center ${
-        theme === "light" ? "text-gray-900" : "text-white"
-      }`}
+      className={`text-4xl font-bold ml-4 p-3 flex items-center ${theme === "light" ? "text-gray-900" : "text-white"
+        }`}
     >
       <DashboardIcon
-        className={`w-10 h-8 mr-2 ${
-          theme === "light" ? "text-gray-900" : "text-white"
-        }`}
+        className={`w-10 h-8 mr-2 ${theme === "light" ? "text-gray-900" : "text-white"
+          }`}
       />
       <h1>Dashboard</h1>
     </div>
   );
 }
 
-function DashboardSection({ section, counts, themeStyles }) {
+function DashboardSection({ section, counts, themeStyles, loading }) {
   const { title, icon, menuKey, eventTypeMapping } = section;
 
   return (
     <>
-      <SectionHeader icon={icon} title={title} themeStyles={themeStyles} />
+      <SectionHeader icon={icon} title={title} themeStyles={themeStyles} loading={loading} />
       <CardContainer
         items={menuItems[menuKey]}
         counts={counts}
+        loading={loading}
         eventTypeMapping={eventTypeMapping}
       />
     </>
   );
 }
 
-function SectionHeader({ icon, title, themeStyles }) {
+
+function SectionHeader({ icon, title, themeStyles, loading,theme }) {
   return (
     <div className="flex items-center">
-      <Image
-        src={icon}
-        alt={`${title} icon`}
-        className="w-8 h-8 ml-8 mt-3"
-        style={{ filter: themeStyles.iconFilter }}
-      />
-      <h1 className="text-4xl font-bold ml-4 mt-3">{title}</h1>
+      {loading ? (
+        <Skeleton variant="circular" width={32} height={32} className="ml-8 mt-3" sx={{ backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0' }} />
+      ) : (
+        <Image
+          src={icon}
+          alt={`${title} icon`}
+          className="w-8 h-8 ml-8 mt-3"
+          style={{ filter: themeStyles.iconFilter }}
+        />
+      )}
+      {loading ? (
+        <Skeleton width={150} height={40} className="ml-4 mt-3" sx={{
+          backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0', // Gray-700 for dark, Gray-300 for light
+        }} />
+      ) : (
+        <h1 className="text-4xl font-bold ml-4 mt-3">{title}</h1>
+      )}
     </div>
   );
 }
 
-function CardContainer({ items, counts, eventTypeMapping = {} }) {
+function CardContainer({ items, counts, eventTypeMapping = {}, loading ,theme}) {
   return (
     <div className="flex flex-wrap justify-start px-2 ml-2">
       {items.map(({ title, icon, url }, index) => (
         <div key={index} className="flex-grow basis-1/4 p-2">
-          <Card
-            title={title}
-            icon={icon}
-            url={url}
-            count={counts[eventTypeMapping[title]] || 0}
-          />
+          {loading ? (
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={100}
+              sx={{
+                backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0', // Gray-700 for dark, Gray-300 for light
+              }}
+            />
+          ) : (
+            <Card
+              title={title}
+              icon={icon}
+              url={url}
+              count={counts[eventTypeMapping[title]] || 0}
+            />
+          )}
         </div>
       ))}
     </div>

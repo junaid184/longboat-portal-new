@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MuiGridDynamic from "../../components/MuiGridDynamic";
 import userAvatar from "../../assets/images/avatar.png";
-import { formatDateWithTime, formatDateWithTime1 } from "../../utils";
+import { formatDateWithTime1 } from "../../utils";
 import Image from "next/image";
 import SearchIcon from "@mui/icons-material/Search";
 import { fetchApi } from "../../fetchApi";
 import Link from "next/link";
 import axios from "axios";
-import Loader from "../../components/Loader";
-import { MdAdd } from "react-icons/md";
 import MessageAlert from "../../components/messageAlert";
 import { toast } from "react-toastify";
 import TicketModal from "../../components/TicketmasterModal";
@@ -16,6 +14,7 @@ import bulkIcon from "../../assets/images/bulkIcon.png";
 import { useTheme } from "../../context/themeContext";
 import { TicketMasterAPIKey } from "../../utils/constant";
 import moment from "moment";
+import { Skeleton } from '@mui/material';
 
 import { Button } from "@mui/material";
 import StylishButton from "../../components/StylishButton";
@@ -70,15 +69,15 @@ export default function Event({ token }) {
 
   const fetchAllEventsIds = async (token) => {
     setLoading(true);
-  
+
     const [response, error] = await fetchApi({
       method: "GET",
       endPoint: `Event/getAllEventsId`,
       token,
     });
-  
+
     setLoading(false);
-  
+
     if (error) {
       toast.error(error.response ? error.response.data.message : error.message);
       return;
@@ -89,7 +88,7 @@ export default function Event({ token }) {
       toast.error("Unexpected response format from the API.");
     }
   };
-  
+
 
   // useEffect(() => {
   //   fetchAllEventsIds(token);
@@ -107,7 +106,7 @@ export default function Event({ token }) {
     try {
       const formatDate = (date) =>
         moment(date).format("YYYY-MM-DDTHH:mm:ss[Z]");
-  
+
       let endPoint = "";
       switch (type) {
         case 1:
@@ -125,7 +124,7 @@ export default function Event({ token }) {
           console.error("Invalid type provided");
           return;
       }
-  
+
       const params = {
         apikey: TicketMasterAPIKey,
         keyword: encodeURIComponent(keyword),
@@ -135,7 +134,7 @@ export default function Event({ token }) {
         startDateTime: formatDate(startTime),
         endDateTime: formatDate(endTime),
       };
-  
+
       if (type === 4) {
         params.attractionId = keyword;
         delete params.keyword;
@@ -143,19 +142,19 @@ export default function Event({ token }) {
         params.venueId = keyword;
         delete params.keyword;
       }
-  
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_TICKETMASTER_BASE_URL}/${endPoint}`,
         {
           params,
         }
       );
-  
+
       if (Array.isArray(response.data?._embedded?.events)) {
         const filteredEvents = response.data._embedded.events.filter((event) =>
           !selectedEventIds.includes(event.id)
         );
-  
+
         const updatedRows = filteredEvents.map((event) => ({
           id: event.id,
           name: event.name,
@@ -165,11 +164,11 @@ export default function Event({ token }) {
           url: event._embedded.venues[0].url,
           venueName: event._embedded.venues[0].name,
         }));
-  
+
         console.log(updatedRows, "filtered updatedRows");
-  
-        setRows(updatedRows); 
-        setTotalCount(filteredEvents.length); 
+
+        setRows(updatedRows);
+        setTotalCount(filteredEvents.length);
       } else {
         console.error("Unexpected API response structure:", response.data);
       }
@@ -179,7 +178,7 @@ export default function Event({ token }) {
       setLoading(false);
     }
   };
-  
+
   const handleOpen = () => setOpen(true);
 
   const handleClose = () => {
@@ -421,7 +420,6 @@ export default function Event({ token }) {
   return (
     <>
       <div className="border-collapse m-5  ">
-        {loading && <Loader />}
         <div
           className="flex items-center relative z-10 justify-between rounded-xl h-20 ml-4 mr-4 px-4"
           style={{ backgroundColor: colors.background }}
@@ -487,15 +485,15 @@ export default function Event({ token }) {
           isEditMode={isEditMode}
           onSubmit={(values) => {
             console.log("Form submitted:", values);
-            
+
             fetchAllEventsIds(token);
             fetchTicketMasterData({
-              keyword: values.keyword, 
+              keyword: values.keyword,
               page: 0,
               pageSize: 200,
-              type: parseInt(values.type, 10), 
+              type: parseInt(values.type, 10),
               startTime: new Date(values.startDate).toISOString(),
-              endTime: new Date(values.endDate).toISOString(), 
+              endTime: new Date(values.endDate).toISOString(),
             });
 
             handleClose();
@@ -510,16 +508,27 @@ export default function Event({ token }) {
           />
         )}
         <div className="relative -mt-10 z-0">
-          <MuiGridDynamic
-            rows={rows}
-            columns={columns}
-            loading={loading}
-            totalCount={count} 
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            checkboxSelection
-            onSelectionModelChange={handleSelectionModelChange}
-          />
+          {loading ? (
+            // <div className="border border-gray-300 rounded-lg p-2">
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={550}
+              sx={{ backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0' }}
+            />
+            // </div>
+          ) : (
+            <MuiGridDynamic
+              rows={rows}
+              columns={columns}
+              loading={loading}
+              totalCount={count}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              checkboxSelection
+              onSelectionModelChange={handleSelectionModelChange}
+            />
+          )}
         </div>
       </div>
     </>

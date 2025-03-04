@@ -8,6 +8,7 @@ import { Formik } from "formik";
 import { loginValidation } from "../utils/validation";
 import { useTheme } from "../context/themeContext"; // Import the useTheme hook
 import { Brightness4, Brightness7 } from "@mui/icons-material"; // Icons for theme toggle
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function Login() {
   const { setIsAuthenticated } = useContext(UserContext);
@@ -16,11 +17,16 @@ export default function Login() {
   const email = useRef();
   const password = useRef();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  }
 
   const LoginSubmit = async (e) => {
     setLoading(true);
@@ -70,9 +76,8 @@ export default function Login() {
 
   return (
     <div
-      className={`flex justify-center items-center min-h-screen w-full overflow-hidden ${
-        theme === "dark" ? "text-white" : "text-black"
-      }`}
+      className={`flex justify-center items-center min-h-screen w-full overflow-hidden ${theme === "dark" ? "text-white" : "text-black"
+        }`}
     >
       <div className="w-[670px] max-w-4xl p-8 ml-14">
         {/* Separate div for the Toggle Button */}
@@ -103,24 +108,21 @@ export default function Login() {
               className={`space-y-4 rounded-2xl p-8 h-[500px] flex flex-col`}
             >
               <h3
-                className={`text-4xl text-center mb-8 font-bold ${
-                  theme === "dark" ? "text-white" : "text-gray-950"
-                }`}
+                className={`text-4xl text-center mb-8 font-bold ${theme === "dark" ? "text-white" : "text-gray-950"
+                  }`}
               >
                 Sign In
               </h3>
               <h5
-                className={`text-xl text-center font-medium ${
-                  theme === "dark" ? "text-white" : "text-gray-950"
-                }`}
+                className={`text-xl text-center font-medium ${theme === "dark" ? "text-white" : "text-gray-950"
+                  }`}
               >
                 Enter Your email and Password to Sign In
               </h5>
               <div>
                 <label
-                  className={`block mb-2 text-lg mt-10 font-bold ${
-                    theme === "dark" ? "text-white" : "text-gray-950"
-                  }`}
+                  className={`block mb-2 text-lg mt-10 font-bold ${theme === "dark" ? "text-white" : "text-gray-950"
+                    }`}
                 >
                   Email
                 </label>
@@ -130,9 +132,8 @@ export default function Login() {
                   id="email"
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`bg-gray-100 h-12 text-gray-950 text-sm rounded-lg block w-full p-2.5 ${
-                    theme === "dark" ? "bg-gray-950" : "bg-gray-100"
-                  }`}
+                  className={`bg-gray-100 h-12 text-gray-950 text-sm rounded-lg block w-full p-2.5 ${theme === "dark" ? "text-white bg-gray-950" : "bg-gray-100 text-gray-950"
+                    }`}
                   placeholder="name@company.com"
                   ref={email}
                   value={values.email}
@@ -141,27 +142,36 @@ export default function Login() {
               {errors.email && touched.email && (
                 <div className="text-red-500">{errors.email}</div>
               )}
-              <div>
+              <div className="relative">
                 <label
-                  className={`block mb-2 text-lg font-bold ${
-                    theme === "dark" ? "text-white" : "text-gray-950"
-                  }`}
+                  className={`block mb-2 text-lg font-bold ${theme === "dark" ? "text-white" : "text-gray-950"
+                    }`}
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.password}
-                  placeholder="••••••••"
-                  className={`bg-gray-100 h-12 text-gray-950 text-sm rounded-lg block w-full p-2.5 ${
-                    theme === "dark" ? "bg-gray-950" : "bg-gray-100"
-                  }`}
-                  ref={password}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    id="password"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.password}
+                    placeholder="••••••••"
+                    className={`bg-gray-100 h-12 text-gray-950 text-sm rounded-lg block w-full p-2.5 ${theme === "dark" ? "text-white bg-gray-950" : "bg-gray-100 text-gray-950"
+                      }`}
+                    ref={password}
+                  />
+                  <IconButton
+                    onClick={togglePasswordVisibility}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 
+    ${theme === "dark" ? "text-gray-950" : "text-gray-950"}
+  `}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+
+                </div>
               </div>
               {errors.password && touched.password && (
                 <div className="text-red-500">{errors.password}</div>
@@ -169,9 +179,8 @@ export default function Login() {
               <div className="flex items-start">
                 <input type="checkbox" className="mr-2 mt-1" />
                 <label
-                  className={`text-md font-medium mb-2 text-gray-950${
-                    theme === "dark" ? "bg-gray-950" : "bg-gray-100"
-                  }`}
+                  className={`text-md font-medium mb-2 text-gray-950${theme === "dark" ? "bg-gray-950" : "bg-gray-100"
+                    }`}
                 >
                   Remember me
                 </label>
@@ -179,11 +188,10 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-[500px] ml-11 font-medium rounded-lg text-xl px-5 py-2.5 text-center ${
-                  loading
-                    ? "bg-gray-800 cursor-not-allowed"
-                    : "bg-gray-500 hover:bg-gray-800"
-                } text-white`}
+                className={`w-[500px] ml-11 font-medium rounded-lg text-xl px-5 py-2.5 text-center ${loading
+                  ? "bg-gray-800 cursor-not-allowed"
+                  : "bg-gray-500 hover:bg-gray-800"
+                  } text-white`}
               >
                 {loading ? (
                   <CircularProgress size={18} color="inherit" />

@@ -1,5 +1,5 @@
 import React from "react";
-import {CircularProgress} from "@mui/material"; 
+import { CircularProgress } from "@mui/material";
 import { Formik, Field, ErrorMessage } from "formik";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   MenuItem,
   Typography,
   Modal,
+  Grid,
 } from "@mui/material";
 
 const EventModal = ({
@@ -27,10 +28,15 @@ const EventModal = ({
 }) => {
   return (
     <Modal open={open} onClose={onClose}>
-      <Box className="flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-6/12 h-[500px] p-6 rounded-lg shadow-lg">
+      <Box className="flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-6/12 min-h-7 p-6 rounded-lg shadow-lg">
         <Formik
-          // enableReinitialize
-          initialValues={selectedRow || initialValues}
+          enableReinitialize
+          initialValues={{
+            ...initialValues,
+            ...selectedRow,
+            isLocked: selectedRow?.isLocked ?? false,
+            presaleCode: selectedRow?.presaleCode ?? ""
+          }}
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
@@ -42,6 +48,7 @@ const EventModal = ({
             handleChange,
             handleBlur,
             values,
+            setFieldValue
           }) => (
             <form onSubmit={handleSubmit} className="w-full">
               <Typography className="mb-5 text-gray-700 font-bold text-3xl border-b-2 border-gray-800 pb-2">
@@ -51,7 +58,7 @@ const EventModal = ({
               <Box className="flex flex-col space-y-4">
                 {/* Row 1 */}
                 <Box className="flex space-x-4">
-                  <TextField
+                  {/* <TextField
                     name="image"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -63,7 +70,7 @@ const EventModal = ({
                     required
                     helperText={<ErrorMessage name="image" />}
                     error={touched.image && Boolean(errors.image)}
-                  />
+                  /> */}
                   <TextField
                     name="eventName"
                     onBlur={handleBlur}
@@ -138,25 +145,7 @@ const EventModal = ({
                       Boolean(errors.listCostPercentage)
                     }
                   />
-                  
-                  <TextField
-                    name="rank"
-                    label="Rank"
-                    type="number"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    value={values.rank}
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    helperText={<ErrorMessage name="rank" />}
-                    error={
-                      touched.rank &&
-                      Boolean(errors.rank)
-                    }
-                  />
                 </Box>
-
                 {/* Row 3 */}
                 <Box className="flex space-x-4">
                   <TextField
@@ -222,36 +211,57 @@ const EventModal = ({
                   />
                 </Box>
                 {/* Checkbox Fields */}
-                <Box className="flex">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="allowPreSales"
-                        checked={values.allowPreSales || false}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        helperText={<ErrorMessage name="allowPreSales" />}
-                        error={touched.allowPreSales && Boolean(errors.allowPreSales)}
-                      />
-                    }
-                    label="allowPreSales"
-                    className="w-1/4"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="hasGALAWNPIT"
-                        checked={values.hasGALAWNPIT || false}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        helperText={<ErrorMessage name="hasGALAWNPIT" />}
-                        error={touched.hasGALAWNPIT && Boolean(errors.hasGALAWNPIT)}
-                      />
-                    }
-                    label="hasGALAWNPIT"
-                    className="w-1/4"
-                  />
-                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="allowPreSales"
+                          checked={values.allowPreSales || false}
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          error={touched.allowPreSales && Boolean(errors.allowPreSales)}
+                        />
+                      }
+                      label="allowPreSales"
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="hasGALAWNPIT"
+                          checked={values.hasGALAWNPIT || false}
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          error={touched.hasGALAWNPIT && Boolean(errors.hasGALAWNPIT)}
+                        />
+                      }
+                      label="hasGALAWNPIT"
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="isLocked"
+                          checked={values.isLocked || false}
+                          onBlur={handleBlur}
+                          onChange={(e) => {
+                            handleChange(e);
+                            if (!e.target.checked) {
+                              setFieldValue("presaleCode", "");
+                            }
+                          }}
+                          error={touched.isLocked && Boolean(errors.isLocked)}
+                        />
+                      }
+                      label="Is Locked"
+                    />
+                  </Grid>
+                </Grid>
+
+
                 {/* Submit Button */}
                 <Button
                   type="submit"

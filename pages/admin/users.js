@@ -9,8 +9,8 @@ import Image from "next/image";
 import { getUsersApi, updateUser, handleDelete } from "../../services/userService";
 import UserModal from "../../components/UserModal";
 import StylishButton from "../../components/StylishButton";
-import Loader from "../../components/Loader";
 import { useTheme } from "../../context/themeContext";
+import { Skeleton } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -25,7 +25,7 @@ export default function Users({ token }) {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [open, setOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedUserId , setSelectedUserId] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState([]);
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const { theme } = useTheme();
   const [page, setPage] = useState(1);
@@ -35,7 +35,7 @@ export default function Users({ token }) {
   const fetchUsers = async () => {
     setLoading(true);
     const users = await getUsersApi(setLoading, setRows, token, page, pageSize, setCount);
-    
+
     if (users) setRows(users);
     setLoading(false);
   };
@@ -114,30 +114,29 @@ export default function Users({ token }) {
     },
   ];
   const colors = {
-    background: theme === "light" ? "#2F2F2F" : "#686868",  
+    background: theme === "light" ? "#2F2F2F" : "#686868",
     text: theme === "light" ? "#FFFFFF" : "#FFFFFF",
     border: theme === "light" ? "#FFFFFF" : "#E0E0E0",
     buttonHover: theme === "light" ? "#FF0000" : "#E0E0E0",
     buttonDeleteHoverBg: "#FF0000",
-      buttonDeleteHoverText: "#FFFFFF",
+    buttonDeleteHoverText: "#FFFFFF",
   };
   return (
     <div className="m-5">
-      {loading && <Loader />}
       <div className="flex items-center relative z-10 mr-4 ml-4 justify-between rounded-xl h-20 bg-[#2F2F2F] p-4"
-      style={{ backgroundColor: colors.background }}
+        style={{ backgroundColor: colors.background }}
       >
         <div className="flex items-center space-x-3">
-        <Image
-              src={userIcon}
-              alt="logo"
-              className="w-7 h-7"
-              style={{filter:"invert(100%)"}}
-            />
-            <h1
-              className="text-3xl font-medium"
-              style={{ color: theme === "light" ? "#fff" : "#fff" }}
-            >
+          <Image
+            src={userIcon}
+            alt="logo"
+            className="w-7 h-7"
+            style={{ filter: "invert(100%)" }}
+          />
+          <h1
+            className="text-3xl font-medium"
+            style={{ color: theme === "light" ? "#fff" : "#fff" }}
+          >
             Users
           </h1>
         </div>
@@ -153,15 +152,26 @@ export default function Users({ token }) {
           onClickNo={() => setShowDeleteConfirmation(false)}
         />
       )}
-    <div className="relative -mt-10 z-0">
-    <MuiGrid
-        data={rows || []}
-        columns={columns}
-        loading={loading}
-        checkboxSelection // Enable checkbox selection for multiple row selection
-        onSelectionModelChange={(newSelection) => handleSelectionModelChange(newSelection)} // Handle row selection
-      />
-</div>
+      <div className="relative -mt-10 z-0">
+        {loading ? (
+          // <div className="border border-gray-300 rounded-lg p-2">
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={550} // Adjust height as needed
+            sx={{ backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0' }}
+          />
+          // </div>
+        ) : (
+          <MuiGrid
+            data={rows || []}
+            columns={columns}
+            loading={loading}
+            checkboxSelection // Enable checkbox selection for multiple row selection
+            onSelectionModelChange={(newSelection) => handleSelectionModelChange(newSelection)} // Handle row selection
+          />
+        )}
+      </div>
       {/* Modal for Add/Edit */}
       <UserModal
         open={open}

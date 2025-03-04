@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { DataGrid, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import Image from "next/image";
-import Loader from "../../components/Loader";
 import inventoryIcon from "../../assets/images/inventory.png";
 import axios from "axios";
 import { formatDateWithTime, formatDate } from "../../utils";
 import { useTheme } from "../../context/themeContext";
+import { Skeleton } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -40,7 +40,7 @@ const DataGridWithPagination = ({ token }) => {
         { page: currentPage + 1, pageSize: currentPageSize },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       // Ensure data structure is correct
       if (Array.isArray(response.data?.data?.data)) {
         const updatedRows = response.data.data.data.map((row) => ({
@@ -58,27 +58,27 @@ const DataGridWithPagination = ({ token }) => {
       setLoading(false); // End loading state
     }
   };
-  
+
   // Effect to fetch data when page or page size changes
   useEffect(() => {
     fetchData(token, page, pageSize);
   }, [token, page, pageSize]);
-  
+
   // Handle page size change
   const handlePageSizeChange = (newPageSize) => {
     setLoading(true); // Trigger loading state for page size change
     setPageSize(newPageSize);
     fetchData(token, page, newPageSize); // Use the new page size directly
   };
-  
+
   // Handle page change
   const handlePageChange = (newPage) => {
     setLoading(true); // Trigger loading state for page change
     setPage(newPage);
     fetchData(token, newPage, pageSize); // Use the new page directly
   };
-  
-  
+
+
   const columns = [
     {
       field: "inventoryId",
@@ -99,7 +99,7 @@ const DataGridWithPagination = ({ token }) => {
       headerAlign: "center",
       renderCell: (params) => (
         <div
-          className="flex items-center justify-center w-80 space-x-4 overflow-x-auto"
+          className="flex items-center w-80 space-x-4 overflow-x-auto"
           style={{
             whiteSpace: "nowrap",
             overflowX: "auto",
@@ -226,18 +226,48 @@ const DataGridWithPagination = ({ token }) => {
     {
       field: "internalNotes",
       headerName: "Internal Notes",
-      width: 150,
+      width: 280,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => <span>{params.row.internalNotes}</span>,
+      renderCell: (params) => (
+        <div
+          className="flex items-center w-80 space-x-4 overflow-x-auto"
+          style={{
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            textOverflow: "ellipsis",
+            height: "56px",
+            lineHeight: "1",
+
+            overflowY: "hidden",
+          }}
+        >
+          <span>{params.row.internalNotes}</span>
+        </div>
+      ),
     },
     {
       field: "publicNotes",
       headerName: "Public Notes",
-      width: 150,
+      width: 220,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => <span>{params.row.publicNotes}</span>,
+      renderCell: (params) => (
+        <div
+          className="flex items-center w-80 space-x-4 overflow-x-auto"
+          style={{
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            textOverflow: "ellipsis",
+            height: "56px",
+            lineHeight: "1",
+
+            overflowY: "hidden",
+          }}
+        >
+          <span>{params.row.publicNotes}</span>
+        </div>
+      ),
     },
     {
       field: "tags",
@@ -379,7 +409,6 @@ const DataGridWithPagination = ({ token }) => {
   };
   return (
     <div className="border-collapse m-5 border-gray-600">
-      {loading && <Loader />}
       {/* Header section */}
       <div
         className="relative z-10 flex items-center justify-between rounded-xl h-20 bg-[#2F2F2F] p-4 mr-4 ml-4"
@@ -403,42 +432,56 @@ const DataGridWithPagination = ({ token }) => {
 
       {/* DataGrid directly without loading condition */}
       <div className="relative -mt-10 z-0">
-        <Box
-          sx={{
-            height: "72vh",
-            width: "100%", // Keep the width at 100%
-            backgroundColor: "white",
-            borderRadius: "12px",
-            boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
-            paddingTop: "32px",
-          }}
-        >
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSize={pageSize}
-            page={page}
-            rowCount={totalCount}
-            paginationMode="server"
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            pagination
-            disableSelectionOnClick
-            checkboxSelection
-            rowsPerPageOptions={[10, 50, 100]}
-            components={{ Toolbar: QuickSearchToolbar }}
+        {loading ? (
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={550}
             sx={{
-              "& .MuiDataGrid-root": {
-                overflow: "auto",
-              },
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 10,
+              backgroundColor: theme === 'dark' ? '#D3D3D3' : '#e0e0e0'
             }}
           />
-
-          {/* Optional: Display total records */}
-          {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
+        ) : (
+          <Box
+            sx={{
+              height: "72vh",
+              width: "100%", // Keep the width at 100%
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0px 0px 20px rgba(0, 0, 0, 0.2)",
+              paddingTop: "32px",
+            }}
+          >
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              pageSize={pageSize}
+              page={page}
+              rowCount={totalCount}
+              paginationMode="server"
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              pagination
+              disableSelectionOnClick
+              checkboxSelection
+              rowsPerPageOptions={[10, 50, 100]}
+              components={{ Toolbar: QuickSearchToolbar }}
+              sx={{
+                "& .MuiDataGrid-root": {
+                  overflow: "auto",
+                },
+              }}
+            />
+            {/* Optional: Display total records */}
+            {/* <Typography variant="body2" sx={{ marginTop: 2 }}>
           Total records: {totalCount}
         </Typography> */}
-        </Box>
+          </Box>
+        )}
       </div>
     </div>
   );

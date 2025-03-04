@@ -2,13 +2,10 @@ import React, { useState, useEffect } from "react";
 import MuiGridDynamic from "../../components/MuiGrid";
 import { fetchApi } from "../../fetchApi";
 import { toast } from "react-toastify";
-import log from "../../assets/images/log.png";
 import { useRouter } from "next/router";
-import { formatDate, formatDateWithTime } from "../../utils";
-import { Box } from "@mui/material";
-import Image from "next/image";
+import {formatDateWithTime} from "../../utils";
 import { useTheme } from "../../context/themeContext";
-import { randomAccount, updateInvoice } from "../../services/orderService";
+import {updateInvoice} from "../../services/orderService";
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -18,22 +15,16 @@ export async function getServerSideProps(context) {
     props: { token },
   };
 }
-function QuickSearchToolbar() {
-  return (
-    <Box sx={{ p: 1.5, pb: 0 }}>
-      <GridToolbarQuickFilter />
-    </Box>
-  );
-}
-export default function Logs({ token }) {
-  const [logs, setLogs] = useState([]);
+
+export default function Invoice({ token }) {
+  const [invoice, setInvoice] = useState([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [Count, setCount] = useState(0);
   const [orders, setOrders] = useState([]);
-  const [accountData, setAccountData] = useState(null); // To hold the account data after the button click.
+  const [accountData, setAccountData] = useState(null);
   const [showAccountTable, setShowAccountTable] = useState(false);
   const { orderId } = router.query;
   const { theme } = useTheme();
@@ -60,7 +51,7 @@ export default function Logs({ token }) {
         const account = response.data;
         if (account) {
           setAccountData(account);
-          setShowAccountTable(true); // Show the account table
+          setShowAccountTable(true);
         } else {
           throw new Error("No account data found.");
         }
@@ -73,7 +64,7 @@ export default function Logs({ token }) {
         err.message || "Something went wrong while fetching the account."
       );
     } finally {
-      setLoading(false); // Ensure loading state is reset
+      setLoading(false);
     }
   };
   const [dataToUpdate, setDataToUpdate] = useState();
@@ -83,7 +74,7 @@ export default function Logs({ token }) {
     try {
       const [response, error] = await fetchApi({
         method: "GET",
-        endPoint: `order/bySkybox?orderId=${orderId}`, // Correct endpoint
+        endPoint: `order/bySkybox?orderId=${orderId}`,
         token,
       });
 
@@ -96,17 +87,13 @@ export default function Logs({ token }) {
         return;
       }
 
-      // Correctly handle the response structure
       if (response?.data?.response) {
-        // Parse the JSON string in response.data.response
         const parsedResponse = JSON.parse(response.data.response);
-        console.log(parsedResponse, "hhhhhhhhhhhhhhhhhhh");
         let cost = parsedResponse.inventory?.cost;
         let qty = parsedResponse.inventory?.quantity;
         let unitCost = cost / qty;
-        // Transform data if needed (e.g., logs array)
         setDataToUpdate(parsedResponse);
-        const logs = [
+        const invoice = [
           {
             ...parsedResponse,
             id: parsedResponse.id,
@@ -127,7 +114,7 @@ export default function Logs({ token }) {
           },
         ];
 
-        setLogs(logs); // Assuming logs is an array
+        setInvoice(invoice);
         toast.success("Invoice fetched successfully.");
       } else {
         toast.error("Unexpected response format from the API.");
@@ -139,19 +126,15 @@ export default function Logs({ token }) {
   };
 
   const handlePageSizeChange = (newPageSize) => {
-    console.log(`page size ${newPageSize}`);
     setPageSize(newPageSize);
   };
 
   // Handle page change
   const handlePageChange = (newPage) => {
-    console.log(`page change ${newPage}`);
     setPage(newPage);
   };
 
   useEffect(() => {
-    console.log("orderId:", orderId);
-
     if (orderId) {
       // Ensure orderId is available before fetching logs
       fetchLogs(orderId);
@@ -318,6 +301,7 @@ export default function Logs({ token }) {
       },
     },
   ];
+
   const colors = {
     background: theme === "light" ? "#2F2F2F" : "#686868",
     text: theme === "light" ? "#FFFFFF" : "#FFFFFF",
@@ -336,8 +320,7 @@ export default function Logs({ token }) {
   }
   return (
     <div className="border-collapse m-5">
-      {/* Logs Section */}
-      {logs.map((log) => (
+      {invoice.map((log) => (
         <div
           key={log.id}
           className="flex relative mr-4 ml-4 z-10 justify-between items-center rounded-xl h-36 bg-[#2F2F2F] p-4"
@@ -372,7 +355,7 @@ export default function Logs({ token }) {
               className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-950 mt-14"
               onClick={() => {
                 console.log(`Button 2 Clicked for Order ID: ${log.id}`);
-                updateInvoiceFunc(logs[0]);
+                updateInvoiceFunc(invoice[0]);
               }}
             >
               Update Invoice PO
@@ -385,10 +368,10 @@ export default function Logs({ token }) {
         style={{ display: "flex", flexDirection: "column", height: "240px" }}
       >
         <MuiGridDynamic
-          data={logs || []}
-          columns={columns} // Assuming `columns` is defined
+          data={invoice || []}
+          columns={columns}
           loading={loading}
-          sx={{ flex: 1 }} // Let grid take available space
+          sx={{ flex: 1 }} 
         />
       </div>
       <div className="flex justify-center items-center mt-4">
@@ -400,7 +383,6 @@ export default function Logs({ token }) {
             {loading ? "Generating..." : "Generate Account"}
           </button>
         </div>
-      {/* Show the Account Table if the Generate Account button is clicked */}
       {showAccountTable && accountData && (
         <div className="mt-5">
           <table className="min-w-full table-auto">
@@ -423,11 +405,6 @@ export default function Logs({ token }) {
           </table>
         </div>
       )}
-
-      {/* Generate Account Button */}
-      
-       
-      
     </div>
   );
 }

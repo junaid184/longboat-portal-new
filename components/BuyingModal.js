@@ -95,7 +95,7 @@ const BuyingModal = ({
                     value={values.firstName}
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    helperText={<ErrorMessage name="axsEventId" />}
+                    helperText={<ErrorMessage name="firstName" />}
                     error={touched.firstName && Boolean(errors.firstName)}
                   />
                   <TextField

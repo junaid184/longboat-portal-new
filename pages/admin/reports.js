@@ -3,7 +3,6 @@ import { fetchApi } from "../../fetchApi";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { formatDateWithTime } from "../../utils";
-import Loader from "../../components/Loader";
 import log from "../../assets/images/log.png";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { useRouter } from "next/router";
@@ -11,6 +10,8 @@ import inventoryIcon from "../../assets/images/inventory.png";
 import ticket from "../../assets/images/ticket.png";
 import reportIcon from "../../assets/images/report.png";
 import { useTheme } from "../../context/themeContext";
+import { Skeleton } from '@mui/material';
+
 import {
   Box,
   Typography,
@@ -176,7 +177,6 @@ export default function Reports({ token }) {
   };
   return (
     <div className="border-collapse m-2 border-gray-600">
-      {loading && <Loader />}
       <div className="flex flex-col rounded-lg">
         <div
           className="flex items-center justify-between h-20 relative z-10 p-4"
@@ -203,16 +203,16 @@ export default function Reports({ token }) {
           className="text-4xl font-bold text-[#2F2F2F] mt-8 ml-4 p-3 flex items-center"
           style={{ color: theme === "light" ? "#2F2F2F" : "#fff" }}
         >
-          <h1> {reportData ? reportData[0]?.eventName : 0}</h1>
+         {loading ? <Skeleton width={350} height={50} /> : <h1> {reportData ? reportData[0]?.eventName : 0}</h1>}
         </div>
-        <span className="ml-8 text-xl">
+        {loading ? <Skeleton className="mr-6" width={350} height={50} /> : <span className="ml-8 text-xl">
           {reportData ? reportData[0]?.venueName : 0}
-        </span>
-        <span className="ml-8">
+        </span>}
+        {loading ? <Skeleton className="mr-6" width={350} height={50} /> : <span className="ml-8">
           {reportData && reportData[0]?.eventDate
             ? formatDateWithTime(reportData[0].eventDate)
             : "No Date Available"}
-        </span>
+        </span>}
 
         <div className="flex flex-wrap justify-center p-4">
           <Grid container spacing={2}>

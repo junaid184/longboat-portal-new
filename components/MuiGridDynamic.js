@@ -16,7 +16,7 @@ export default function MuiGridDynamic({
   onPageSizeChange,
   onSelectionModelChange,
   autoHeight = false,
-  height = "72vh",
+  height = "76vh",
 }) {
   const [pageSize, setPageSize] = useState(initialPageSize);
 

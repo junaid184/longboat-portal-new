@@ -1,4 +1,3 @@
-import { toast } from "react-toastify";
 import { fetchApi } from "../fetchApi";
 import { TicketMasterAPIKey } from "../utils/constant";
 
