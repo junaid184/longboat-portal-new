@@ -116,3 +116,25 @@ export const updateInvoice = async (data, poId, poLineId, orderId, token) => {
   toast.success("Invoice updated successfully.");
   return true;
 };
+
+export const getAutomatiqOrders = async (token , setOrders, setLoading) => {
+  // setLoading(true);
+
+  const [response, error] = await fetchApi({
+    method: "GET",
+    endPoint: `Order/GetAutomatiqOrders`,
+    token,
+  });
+console.log(response,"response");
+  // setLoading(false);
+
+  if (error) {
+    toast.error(error.response ? error.response.data.message : error.message);
+    return;
+  }
+  if (response?.data) {
+    setOrders(response.data);
+  } else {
+    toast.error("Unexpected response format from the API.");
+  }
+};

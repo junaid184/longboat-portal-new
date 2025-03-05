@@ -8,7 +8,7 @@ export const formatLatLng = (lat, lng) => `${lat}, ${lng}`;
 
 export const formatTime = (time) => moment(time).format('hh:mm A');
 
-export const formatDateWithDay = (date) => moment(date).format('dddd, DD MMMM YYYY');
+export const formatDateWithDay = (date) => moment(date).format('ddd, MMM DD,  YYYY');
 
 export const formatDate = (dateString) => {
     if (!dateString) return ''; // Handle null or undefined dates

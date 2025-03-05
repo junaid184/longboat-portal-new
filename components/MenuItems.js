@@ -1,5 +1,6 @@
 import homeIcon from '../assets/images/icons/homeIcon.png';
 import orderIcon from '../assets/images/icons/order.png';
+import automatiqOrderIcon from '../assets/images/icons/automatiq.png';
 import fulfillOrder from '../assets/images/fulfillment.png';
 import totalOrder from '../assets/images/order-fulfillment.png';
 import eventIcon from '../assets/images/events.png';
@@ -24,6 +25,11 @@ export default {
             url: '/admin/orders',
             title: 'Orders',
             icon: orderIcon,
+        },
+        {
+            url: '/admin/automatiqOrders',
+            title: 'Automatiq Orders',
+            icon: automatiqOrderIcon,
         },
         
         {

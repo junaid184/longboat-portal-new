@@ -20,7 +20,7 @@ const ThemeToggleButton = ({ onToggle }) => {
       {/* Circle */}
       <div
         className={`w-6 h-6 rounded-full transform transition-transform duration-300 ${
-          isDarkMode ? "translate-x-6 bg-gray-600" : "translate-x-0 bg-gray-100"
+          isDarkMode ? "translate-x-6 bg-gray-600" : "translate-x-0 bg-gray-600"
         }`}
       ></div>
 
